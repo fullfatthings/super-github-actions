@@ -35,7 +35,7 @@ jobs:
         run: >
           aws ecs run-task
           --cluster ${{ inputs.cluster }}
-          --task-definition ${{ inputs.task-definition }}
+          --task-definition ${{ inputs.task-definition-family }}
           | tee task.json
 
       - name: Wait for updates
@@ -48,4 +48,4 @@ jobs:
         run: >
           aws logs tail /ecs/${{ inputs.cluster }}
           --format short
-          --log-stream-names ${{ inputs.task-definition }}/app/$(jq -r '.tasks[0].taskArn' task.json | cut -d/ -f3)
+          --log-stream-names ${{ inputs.task-definition-family }}/app/$(jq -r '.tasks[0].taskArn' task.json | cut -d/ -f3)
