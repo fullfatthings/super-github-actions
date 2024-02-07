@@ -53,14 +53,14 @@ jobs:
           > new-task-definition.json
 
       - name: Deploy task definition for non-service tasks
-        if: "${{ github.event.inputs.service == '' }}"
+        if: "${{ inputs.service == '' }}"
         uses: aws-actions/amazon-ecs-deploy-task-definition@v1
         with:
           task-definition: new-task-definition.json
           cluster: ${{ inputs.cluster }}
 
       - name: Deploy task definition for service tasks
-        if: "${{ github.event.inputs.service != '' }}"
+        if: "${{ inputs.service != '' }}"
         uses: aws-actions/amazon-ecs-deploy-task-definition@v1
         with:
           task-definition: new-task-definition.json
