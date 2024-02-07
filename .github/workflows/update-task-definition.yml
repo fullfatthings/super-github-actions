@@ -1,0 +1,68 @@
+name: Update Task Definition
+
+on:
+  workflow_call:
+    inputs:
+      aws-region:
+        required: true
+        type: string
+      cluster:
+        required: true
+        type: string
+      github-actions-role:
+        required: true
+        type: string
+      image:
+        required: true
+        type: string
+      service:
+        required: false
+        type: string
+      task-definition-family:
+        required: true
+        type: string
+
+permissions:
+  id-token: write
+  contents: read
+
+jobs:
+  update-task-definition:
+    runs-on: ubuntu-22.04
+
+    steps:
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          role-to-assume: ${{ inputs.github-actions-role }}
+          aws-region: ${{ inputs.aws-region }}
+
+      - name: Login to Amazon ECR
+        id: ecr-login
+        uses: aws-actions/amazon-ecr-login@v2
+
+      - name: Download and clean task definition
+        run: >
+          aws ecs describe-task-definition --task-definition ${{ inputs.task-definition-family }} --query taskDefinition
+          | jq -r 'del(.taskDefinitionArn, .requiresAttributes, .compatibilities, .revision, .status, .registeredAt, .registeredBy)'
+          > task-definition.json
+
+      - name: Render task definition
+        run: >
+          jq '.containerDefinitions[].image = "${{ steps.ecr-login.outputs.registry }}/${{ inputs.image }}"' task-definition.json
+          > new-task-definition.json
+
+      - name: Deploy task definition for non-service tasks
+        if: "${{ github.event.inputs.service == '' }}"
+        uses: aws-actions/amazon-ecs-deploy-task-definition@v1
+        with:
+          task-definition: new-task-definition.json
+          cluster: ${{ inputs.cluster }}
+
+      - name: Deploy task definition for service tasks
+        if: "${{ github.event.inputs.service != '' }}"
+        uses: aws-actions/amazon-ecs-deploy-task-definition@v1
+        with:
+          task-definition: new-task-definition.json
+          service: ${{ inputs.service }}
+          cluster: ${{ inputs.cluster }}

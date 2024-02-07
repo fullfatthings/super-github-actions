@@ -1,0 +1,51 @@
+name: Run Deploy Task
+
+on:
+  workflow_call:
+    inputs:
+      aws-region:
+        required: true
+        type: string
+      cluster:
+        required: true
+        type: string
+      github-actions-role:
+        required: true
+        type: string
+      task-definition-family:
+        required: true
+        type: string
+
+permissions:
+  id-token: write
+  contents: read
+
+jobs:
+  run-deploy-task:
+    runs-on: ubuntu-22.04
+
+    steps:
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          role-to-assume: ${{ inputs.github-actions-role }}
+          aws-region: ${{ inputs.aws-region }}
+
+      - name: Run updates
+        run: >
+          aws ecs run-task
+          --cluster ${{ inputs.cluster }}
+          --task-definition ${{ inputs.task-definition-family }}
+          | tee task.json
+
+      - name: Wait for updates
+        run: >
+          aws ecs wait tasks-stopped
+          --cluster ${{ inputs.cluster }}
+          --tasks $(jq -r '.tasks[0].taskArn' task.json)
+
+      - name: Display update logs
+        run: >
+          aws logs tail /ecs/${{ inputs.cluster }}
+          --format short
+          --log-stream-names ${{ inputs.task-definition-family }}/app/$(jq -r '.tasks[0].taskArn' task.json | cut -d/ -f3)
