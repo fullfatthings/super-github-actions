@@ -21,6 +21,10 @@ on:
       task-definition-family:
         required: true
         type: string
+      wait-for-service-stability:
+        required: true
+        default: false
+        type: boolean
 
 permissions:
   id-token: write
@@ -66,3 +70,4 @@ jobs:
           task-definition: new-task-definition.json
           service: ${{ inputs.service }}
           cluster: ${{ inputs.cluster }}
+          wait-for-service-stability: ${{ inputs.wait-for-service-stability }}
