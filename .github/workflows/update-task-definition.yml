@@ -22,7 +22,7 @@ on:
         required: true
         type: string
       wait-for-service-stability:
-        required: true
+        required: false
         default: false
         type: boolean
 

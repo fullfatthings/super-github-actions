@@ -94,5 +94,5 @@ prefix.
 * `service`: Optional. The name of the service to update to use the new task
 definition.
 * `task-definition-family`: Name of the task definition family.
-* `wait-for-service-stability`: Defaults to false. Whether to wait for the
-service to reach stable state after deploying.
+* `wait-for-service-stability`: Optional. Defaults to false. Whether to wait for
+the service to reach stable state after deploying.
