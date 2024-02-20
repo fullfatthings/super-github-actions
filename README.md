@@ -78,10 +78,11 @@ Arguments:
 * `github-actions-role`: The ARN of the above role.
 * `task-definition-family`: Name of the task definition family.
 
-## update-task-definition.yml
+## update-background-service.yml
 
 Updates a task definition to use a new ECR image from a private ECR repository,
-and a service if one is provided. If the task definition contains multiple
+and the service to use the new task definition. Does _not_ wait for the service
+to reach stable state after deploying. If the task definition contains multiple
 containers, then all containers are updated to use the new image.
 
 Arguments:
@@ -91,8 +92,37 @@ Arguments:
 * `github-actions-role`: The ARN of the above role.
 * `image`: The new ECR image to use. Should not include the *.amazonaws.com/
 prefix.
-* `service`: Optional. The name of the service to update to use the new task
-definition.
+* `service`: The name of the service to update to use the new task definition.
 * `task-definition-family`: Name of the task definition family.
-* `wait-for-service-stability`: Optional. Defaults to false. Whether to wait for
-the service to reach stable state after deploying.
+
+## update-task-definition.yml
+
+Updates a task definition to use a new ECR image from a private ECR repository.
+If the task definition contains multiple containers, then all containers are
+updated to use the new image.
+
+Arguments:
+
+* `aws-region`: The AWS region the cluster resides in.
+* `cluster`: The name of the ECS cluster.
+* `github-actions-role`: The ARN of the above role.
+* `image`: The new ECR image to use. Should not include the *.amazonaws.com/
+prefix.
+* `task-definition-family`: Name of the task definition family.
+
+## update-web-service.yml
+
+Updates a task definition to use a new ECR image from a private ECR repository,
+and the service to use the new task definition. Waits for the service to reach
+stable state after deploying. If the task definition contains multiple
+containers, then all containers are updated to use the new image.
+
+Arguments:
+
+* `aws-region`: The AWS region the cluster resides in.
+* `cluster`: The name of the ECS cluster.
+* `github-actions-role`: The ARN of the above role.
+* `image`: The new ECR image to use. Should not include the *.amazonaws.com/
+prefix.
+* `service`: The name of the service to update to use the new task definition.
+* `task-definition-family`: Name of the task definition family.
