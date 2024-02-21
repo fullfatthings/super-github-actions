@@ -1,4 +1,4 @@
-name: Update Task Definition
+name: Update Web Service
 
 on:
   workflow_call:
@@ -15,6 +15,9 @@ on:
       image:
         required: true
         type: string
+      service:
+        required: true
+        type: string
       task-definition-family:
         required: true
         type: string
@@ -24,7 +27,7 @@ permissions:
   contents: read
 
 jobs:
-  update-task-definition:
+  update-web-service:
     runs-on: ubuntu-22.04
 
     steps:
@@ -53,4 +56,6 @@ jobs:
         uses: aws-actions/amazon-ecs-deploy-task-definition@v1
         with:
           task-definition: new-task-definition.json
+          service: ${{ inputs.service }}
           cluster: ${{ inputs.cluster }}
+          wait-for-service-stability: true
