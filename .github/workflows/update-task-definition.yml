@@ -50,7 +50,7 @@ jobs:
           > new-task-definition.json
 
       - name: Deploy task definition
-        uses: aws-actions/amazon-ecs-deploy-task-definition@v1
+        uses: fullfatthings/amazon-ecs-deploy-task-definition@master
         with:
           task-definition: new-task-definition.json
           cluster: ${{ inputs.cluster }}
