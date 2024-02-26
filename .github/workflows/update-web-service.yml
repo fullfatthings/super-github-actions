@@ -53,7 +53,7 @@ jobs:
           > new-task-definition.json
 
       - name: Deploy task definition
-        uses: aws-actions/amazon-ecs-deploy-task-definition@v1
+        uses: fullfatthings/amazon-ecs-deploy-task-definition@upgrade-to-node-20
         with:
           task-definition: new-task-definition.json
           service: ${{ inputs.service }}
