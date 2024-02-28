@@ -6,6 +6,9 @@ on:
       aws-region:
         required: true
         type: string
+      dockerfile-directory:
+        required: true
+        type: string
       ecr-repository:
         required: true
         type: string
@@ -39,7 +42,7 @@ jobs:
         uses: aws-actions/amazon-ecr-login@v2
 
       - name: Build Docker image
-        run: docker build -t ${{ inputs.ecr-repository }} MailAnalyser/
+        run: docker build -t ${{ inputs.ecr-repository }} ${{ inputs.dockerfile-directory }}
 
       - name: Tag Docker image
         run: |
