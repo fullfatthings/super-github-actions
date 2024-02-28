@@ -15,6 +15,9 @@ on:
       github-actions-role:
         required: true
         type: string
+      image-name:
+        required: true
+        type: string
       image-tag:
         required: true
         type: string
@@ -46,8 +49,8 @@ jobs:
 
       - name: Tag Docker image
         run: |
-          docker tag mailanalyser ${{ steps.ecr-login.outputs.registry }}/${{ inputs.ecr-repository }}:${{ inputs.image-tag }}
-          docker tag mailanalyser ${{ steps.ecr-login.outputs.registry }}/${{ inputs.ecr-repository }}:latest
+          docker tag ${{ inputs.image-name }} ${{ steps.ecr-login.outputs.registry }}/${{ inputs.ecr-repository }}:${{ inputs.image-tag }}
+          docker tag ${{ inputs.image-name }} ${{ steps.ecr-login.outputs.registry }}/${{ inputs.ecr-repository }}:latest
 
       - name: Push Docker image to ECR
         run: |
