@@ -6,11 +6,18 @@ on:
       aws-region:
         required: true
         type: string
+      build-args:
+        required: false
+        default: ''
+        type: string
       dockerfile-directory:
         required: true
         type: string
       ecr-repository:
         required: true
+        type: string
+      file:
+        required: false
         type: string
       github-actions-role:
         required: true
@@ -60,6 +67,8 @@ jobs:
           tags: ${{ steps.meta.outputs.tags }}
           labels: ${{ steps.meta.outputs.labels }}
           context: ${{ inputs.dockerfile-directory }}
+          file: ${{ inputs.file }}
+          build-args: ${{ inputs.build-args }}
           cache-from: type=gha
           cache-to: type=gha,mode=max
 
