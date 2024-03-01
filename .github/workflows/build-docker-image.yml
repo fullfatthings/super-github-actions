@@ -10,7 +10,7 @@ on:
         required: false
         default: ''
         type: string
-      dockerfile-directory:
+      docker-context:
         required: true
         type: string
       ecr-repository:
@@ -66,7 +66,7 @@ jobs:
           push: true
           tags: ${{ steps.meta.outputs.tags }}
           labels: ${{ steps.meta.outputs.labels }}
-          context: ${{ inputs.dockerfile-directory }}
+          context: ${{ inputs.docker-context }}
           file: ${{ inputs.file }}
           build-args: ${{ inputs.build-args }}
           cache-from: type=gha
