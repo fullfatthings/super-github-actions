@@ -69,8 +69,8 @@ jobs:
           context: ${{ inputs.dockerfile-directory }}
           file: ${{ inputs.file }}
           build-args: ${{ inputs.build-args }}
-          # cache-from: type=gha
-          # cache-to: type=gha,mode=max
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
 
       - name: Set summary
         run: |
