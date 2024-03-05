@@ -1,0 +1,80 @@
+name: Build Docker Image
+
+on:
+  workflow_call:
+    inputs:
+      aws-region:
+        required: true
+        type: string
+      build-args:
+        required: false
+        default: ''
+        type: string
+      docker-context:
+        required: true
+        type: string
+      ecr-repository:
+        required: true
+        type: string
+      file:
+        required: false
+        type: string
+      github-actions-role:
+        required: true
+        type: string
+      image-tag:
+        required: true
+        type: string
+
+permissions:
+  id-token: write
+  contents: read
+
+jobs:
+  build-docker-image:
+    runs-on: ubuntu-22.04
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          role-to-assume: ${{ inputs.github-actions-role }}
+          aws-region: ${{ inputs.aws-region }}
+
+      - name: Login to Amazon ECR
+        id: ecr-login
+        uses: aws-actions/amazon-ecr-login@v2
+
+      - name: Set up image metadata
+        id: meta
+        uses: docker/metadata-action@v5
+        with:
+          images: ${{ steps.ecr-login.outputs.registry }}/${{ inputs.ecr-repository }}
+          tags: |
+            type=raw,value=${{ inputs.image-tag }}
+            type=raw,value=latest
+
+      - name: Build and push image to Amazon ECR
+        uses: docker/build-push-action@v5
+        with:
+          push: true
+          tags: ${{ steps.meta.outputs.tags }}
+          labels: ${{ steps.meta.outputs.labels }}
+          context: ${{ inputs.docker-context }}
+          file: ${{ inputs.file }}
+          build-args: ${{ inputs.build-args }}
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+
+      - name: Set summary
+        run: |
+          echo "Image: ${{ steps.ecr-login.outputs.registry }}/${{ inputs.ecr-repository }}:${{ inputs.image-tag }}" >> $GITHUB_STEP_SUMMARY
+
+    outputs:
+      image: ${{ steps.ecr-login.outputs.registry }}/${{ inputs.ecr-repository }}:${{ inputs.image-tag }}
