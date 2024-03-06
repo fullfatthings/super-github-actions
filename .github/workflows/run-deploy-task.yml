@@ -43,7 +43,7 @@ jobs:
           ATTEMPTS=0
           EXIT_CODE=255
           while [ $EXIT_CODE -eq 255 ]; do
-            if [ $ATTEMPTS -ne 0 ]; do
+            if [ $ATTEMPTS -ne 0 ]; then
               echo "Retrying wait"
             fi
             aws ecs wait tasks-stopped --cluster ${{ inputs.cluster }} --tasks $(jq -r '.tasks[0].taskArn' task.json)
