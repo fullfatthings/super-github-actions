@@ -39,10 +39,21 @@ jobs:
           | tee task.json
 
       - name: Wait for updates
-        run: >
-          aws ecs wait tasks-stopped
-          --cluster ${{ inputs.cluster }}
-          --tasks $(jq -r '.tasks[0].taskArn' task.json)
+        run: |
+          set +e
+          ATTEMPTS=0
+          EXIT_CODE=255
+          while [ $EXIT_CODE -eq 255 ] && [ $ATTEMPTS -lt 12 ]; do
+            if [ $ATTEMPTS -ne 0 ]; then
+              echo "Retrying wait"
+            fi
+            OUTPUT=$(aws ecs wait tasks-stopped --cluster ${{ inputs.cluster }} --tasks $(jq -r '.tasks[0].taskArn' task.json))
+            EXIT_CODE=$?
+            ((ATTEMPTS++))
+          done
+          echo $OUTPUT
+          set -e
+          exit $EXIT_CODE
 
       - name: Display update logs
         run: >
