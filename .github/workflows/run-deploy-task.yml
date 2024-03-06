@@ -43,7 +43,7 @@ jobs:
           set +e
           ATTEMPTS=0
           EXIT_CODE=255
-          while [ $EXIT_CODE -eq 255 ]; do
+          while [ $EXIT_CODE -eq 255 ] && [ $ATTEMPTS -lt 12 ]; do
             if [ $ATTEMPTS -ne 0 ]; then
               echo "Retrying wait"
             fi
