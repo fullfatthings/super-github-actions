@@ -45,9 +45,10 @@ jobs:
           > task-definition.json
 
       - name: Render task definition
-        run: >
-          jq '.containerDefinitions[].image = "${{ steps.ecr-login.outputs.registry }}/${{ inputs.image }}"' task-definition.json
-          > new-task-definition.json
+        run: |
+          IMAGE="${{ steps.ecr-login.outputs.registry }}/${{ inputs.image }}"
+          REPOSITORY=${IMAGE%:*}
+          jq ".containerDefinitions[] |= if (.image | startswith(\"$REPOSITORY\")) then (.image = \"$FULL_IMAGE\") else . end" task-definition.json > new-task-definition.json
 
       - name: Deploy task definition
         uses: fullfatthings/amazon-ecs-deploy-task-definition@master
