@@ -12,7 +12,8 @@ on:
       github-actions-role:
         required: true
         type: string
-      image:
+      images:
+        description: 'A semicolon separated list of images to update'
         required: true
         type: string
       service:
@@ -49,14 +50,20 @@ jobs:
 
       - name: Render task definition
         run: |
-          IMAGE="${{ steps.ecr-login.outputs.registry }}/${{ inputs.image }}"
-          REPOSITORY=${IMAGE%:*}
-          jq ".containerDefinitions[] |= if (.image | startswith(\"$REPOSITORY\")) then (.image = \"$IMAGE\") else . end" task-definition.json > new-task-definition.json
+          IFS=";" read -a IMAGES <<< "${{ inputs.images }}"
+          for image in "${IMAGES[@]}"
+          do
+            FULL_IMAGE="${{ steps.ecr-login.outputs.registry }}/$image"
+            REPOSITORY=${FULL_IMAGE%:*}
+            REPOSITORY=${FULL_IMAGE%@*}
+            jq ".containerDefinitions[] |= if (.image | startswith(\"$REPOSITORY\")) then (.image = \"$FULL_IMAGE\") else . end" task-definition.json > new-task-definition.json
+            mv new-task-definition.json task-definition.json
+          done
 
       - name: Deploy task definition
         uses: fullfatthings/amazon-ecs-deploy-task-definition@master
         with:
-          task-definition: new-task-definition.json
+          task-definition: task-definition.json
           service: ${{ inputs.service }}
           cluster: ${{ inputs.cluster }}
           wait-for-service-stability: true
