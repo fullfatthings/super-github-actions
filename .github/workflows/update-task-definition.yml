@@ -52,7 +52,6 @@ jobs:
           do
             FULL_IMAGE="${{ steps.ecr-login.outputs.registry }}/$image"
             REPOSITORY=${FULL_IMAGE%:*}
-            REPOSITORY=${FULL_IMAGE%@*}
             jq ".containerDefinitions[] |= if (.image | startswith(\"$REPOSITORY\")) then (.image = \"$FULL_IMAGE\") else . end" task-definition.json > new-task-definition.json
             mv new-task-definition.json task-definition.json
           done
