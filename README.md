@@ -90,8 +90,8 @@ Arguments:
 * `aws-region`: The AWS region the cluster resides in.
 * `cluster`: The name of the ECS cluster.
 * `github-actions-role`: The ARN of the above role.
-* `image`: The new ECR image to use. Should not include the *.amazonaws.com/
-prefix.
+* `images`: A semicolon-separated list of the new ECR images to use. Should not
+include the *.amazonaws.com/ prefix.
 * `service`: The name of the service to update to use the new task definition.
 * `task-definition-family`: Name of the task definition family.
 
@@ -106,8 +106,8 @@ Arguments:
 * `aws-region`: The AWS region the cluster resides in.
 * `cluster`: The name of the ECS cluster.
 * `github-actions-role`: The ARN of the above role.
-* `image`: The new ECR image to use. Should not include the *.amazonaws.com/
-prefix.
+* `images`: A semicolon-separated list of the new ECR images to use. Should not
+include the *.amazonaws.com/ prefix.
 * `task-definition-family`: Name of the task definition family.
 
 ## update-web-service.yml
@@ -122,7 +122,7 @@ Arguments:
 * `aws-region`: The AWS region the cluster resides in.
 * `cluster`: The name of the ECS cluster.
 * `github-actions-role`: The ARN of the above role.
-* `image`: The new ECR image to use. Should not include the *.amazonaws.com/
-prefix.
+* `images`: A semicolon-separated list of the new ECR images to use. Should not
+include the *.amazonaws.com/ prefix.
 * `service`: The name of the service to update to use the new task definition.
 * `task-definition-family`: Name of the task definition family.
