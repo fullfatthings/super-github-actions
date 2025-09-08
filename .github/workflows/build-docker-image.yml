@@ -32,7 +32,7 @@ permissions:
 
 jobs:
   build-docker-image:
-    runs-on: ubuntu-24.04
+    runs-on: macos-15
 
     steps:
       - name: Checkout
