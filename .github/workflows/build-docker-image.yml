@@ -25,6 +25,14 @@ on:
       image-tag:
         required: true
         type: string
+      architectures:
+        required: false
+        default: '["amd64"]'
+        type: string
+      arm64-runner:
+        required: false
+        default: ubuntu-24.04-arm
+        type: string
 
 permissions:
   id-token: write
@@ -32,7 +40,10 @@ permissions:
 
 jobs:
   build-docker-image:
-    runs-on: ubuntu-24.04
+    strategy:
+      matrix:
+        arch: ${{ fromJSON(inputs.architectures) }}
+    runs-on: ${{ matrix.arch == 'arm64' && inputs.arm64-runner || 'ubuntu-24.04' }}
 
     steps:
       - name: Checkout
@@ -51,30 +62,45 @@ jobs:
         id: ecr-login
         uses: aws-actions/amazon-ecr-login@v2
 
-      - name: Set up image metadata
-        id: meta
-        uses: docker/metadata-action@v6
-        with:
-          images: ${{ steps.ecr-login.outputs.registry }}/${{ inputs.ecr-repository }}
-          tags: |
-            type=raw,value=${{ inputs.image-tag }}
-            type=raw,value=latest
-
       - name: Build and push image to Amazon ECR
         uses: docker/build-push-action@v7
         with:
           push: true
-          tags: ${{ steps.meta.outputs.tags }}
-          labels: ${{ steps.meta.outputs.labels }}
+          tags: ${{ steps.ecr-login.outputs.registry }}/${{ inputs.ecr-repository }}:${{ inputs.image-tag }}-${{ matrix.arch }}
           context: ${{ inputs.docker-context }}
           file: ${{ inputs.file }}
           build-args: ${{ inputs.build-args }}
-          cache-from: type=gha
-          cache-to: type=gha,mode=max
+          cache-from: type=gh,scope=${{ inputs.ecr-repository }}-${{ matrix.arch }}
+          cache-to: type=gha,mode=max,scope=${{ inputs.ecr-repository }}-${{ matrix.arch }}
 
-      - name: Set summary
+  merge:
+    needs: build-docker-image
+    runs-on: ubuntu-24.04
+
+    steps:
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v4
+
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v6
+        with:
+          role-to-assume: ${{ inputs.github-actions-role }}
+          aws-region: ${{ inputs.aws-region }}
+
+      - name: Login to Amazon ECR
+        id: ecr-login
+        uses: aws-actions/amazon-ecr-login@v2
+
+      - name: Publish combined image
+        env:
+          IMAGE: ${{ steps.ecr-login.outputs.registry }}/${{ inputs.ecr-repository }}
+          TAG: ${{ inputs.image-tag }}
+          ARCHS: ${{ join(fromJSON(inputs.architectures), ' ') }}
         run: |
-          echo "Image: ${{ steps.ecr-login.outputs.registry }}/${{ inputs.ecr-repository }}:${{ inputs.image-tag }}" >> $GITHUB_STEP_SUMMARY
+          SOURCES=""
+          for arch in $ARCHS; do SOURCES="$SOURCES $IMAGE:$TAG-$arch"; done
+          docker buildx imagetools create -t "$IMAGE:$TAG" -t "$IMAGE:latest" $SOURCES
+          echo "Image: $IMAGE:$TAG" >> $GITHUB_STEP_SUMMARY
 
     outputs:
       image: ${{ steps.ecr-login.outputs.registry }}/${{ inputs.ecr-repository }}:${{ inputs.image-tag }}
