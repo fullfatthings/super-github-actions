@@ -31,7 +31,7 @@ on:
         type: string
       arm64-runner:
         required: false
-        default: ubuntu-24.04-arm
+        default: ubuntu-26.04-arm
         type: string
 
 permissions:
@@ -43,7 +43,7 @@ jobs:
     strategy:
       matrix:
         arch: ${{ fromJSON(inputs.architectures) }}
-    runs-on: ${{ matrix.arch == 'arm64' && inputs.arm64-runner || 'ubuntu-24.04' }}
+    runs-on: ${{ matrix.arch == 'arm64' && inputs.arm64-runner || 'ubuntu-26.04' }}
 
     steps:
       - name: Checkout
@@ -75,7 +75,7 @@ jobs:
 
   merge:
     needs: build-docker-image
-    runs-on: ubuntu-24.04
+    runs-on: ubuntu-26.04
 
     steps:
       - name: Set up Docker Buildx
